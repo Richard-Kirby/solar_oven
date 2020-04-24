@@ -52,6 +52,7 @@ class PanTiltController(threading.Thread):
         self.pause_time = pause_time
         self.cmd_queue = queue.Queue()
 
+    # Send the servos to zero position.
     def send_servos_home(self):
         self.pan_servo.set_angle(0 + self.pan_offset)
         self.tilt_servo.set_angle(0 + self.tilt_offset)
@@ -111,7 +112,6 @@ if __name__ == "__main__":
                 pan_tilt_controller.cmd_queue.put_nowait(cmd)
 
             #time.sleep(1)
-
 
     except KeyboardInterrupt:
 
