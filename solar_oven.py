@@ -20,7 +20,7 @@ class SolarOven(threading.Thread):
 
         self.latitude = location["location_data"]["latitude"]
         self.longitude = location["location_data"]["longitude"]
-        print(self.latitude, self.longitude)
+        # print(self.latitude, self.longitude)
 
     def get_solar_info_by_time(self, calc_time):
 
@@ -29,7 +29,7 @@ class SolarOven(threading.Thread):
                     'azimuth_deg': pysolar.solar.get_azimuth(self.latitude, self.longitude, calc_time),
                     'power': pysolar.radiation.get_radiation_direct(calc_time, alt),
                     'calc_time': calc_time.strftime("%H:%M:%S %Z %a %d/%m/%y")}
-        print(ret_data)
+        # print(ret_data)
 
         return ret_data
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
 
             time_data = datetime.datetime.now(tz=pytz.timezone("Europe/London"))
             sun_data = solar_oven.get_solar_info_by_time(time_data)
-            print(time_data, sun_data)
+            # print(time_data, sun_data)
             cmd = {'pan_angle': 270 - sun_data['azimuth_deg'], 'tilt_angle': 180 - sun_data['altitude_deg']}
             pan_tilt_controller.cmd_queue.put_nowait(cmd)
             time.sleep(60)
@@ -76,5 +76,3 @@ if __name__ == "__main__":
 
     finally:
         print("\nTidying up")
-
-

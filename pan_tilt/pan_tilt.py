@@ -36,6 +36,18 @@ class Servo:
         servo_pulse = int((float(angle / 210) * (self.servo_dict['high_duty'] - self.servo_dict['low_duty']))
                           + self.servo_dict['low_duty'])
 
+        if servo_pulse > self.servo_dict['high_duty']:
+            print("Setting PWM pulse to max {} from {} request" .format(self.servo_dict['high_duty'], servo_pulse))
+            servo_pulse = self.servo_dict['high_duty']
+
+        if 0 < servo_pulse < self.servo_dict['low_duty']:
+            print("Setting PWM pulse to min {} from {} request" .format(self.servo_dict['low_duty'], servo_pulse))
+            servo_pulse = self.servo_dict['low_duty']
+
+        if servo_pulse < 0:
+            print("Setting PWM pulse to 0 from {} request" .format(servo_pulse))
+            servo_pulse = 0
+
         pi.set_servo_pulsewidth(self.servo_dict['pwm_pin'], int(servo_pulse))
 
 
@@ -118,7 +130,7 @@ if __name__ == "__main__":
         print("Quitting the program due to Ctrl-C")
 
     except:
-        print("Unexpected error:", sys.exc_info()[0])
+        print("Unexpected error:", sys.exc_info())
         raise
 
     finally:
