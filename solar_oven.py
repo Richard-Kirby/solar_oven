@@ -36,6 +36,16 @@ class SolarOven(threading.Thread):
 
 if __name__ == "__main__":
 
+    print("Cmd line argument demo will put servos through a day. Cmd line args received {} argument {} received" .format(
+          len(sys.argv), sys.argv))
+
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'demo':
+            demo_mode = True
+            print("Demo Mode")
+    else:
+        demo_mode = False
+
     solar_oven = SolarOven()
 
     time_data = datetime.datetime.now(tz=pytz.timezone("Europe/London"))
@@ -46,7 +56,7 @@ if __name__ == "__main__":
     tilt_servo_def = {'pwm_pin': 5, 'low_duty': 500, 'high_duty': 2500}
 
     # Set up the pan tilt controller and start the thread.
-    pan_tilt_controller = pan_tilt.PanTiltController(pan_servo_def, tilt_servo_def, 2, pan_offset=2, tilt_offset=15)
+    pan_tilt_controller = pan_tilt.PanTiltController(pan_servo_def, tilt_servo_def, 0.1, pan_offset=2, tilt_offset=15)
     pan_tilt_controller.daemon = True
     pan_tilt_controller.start()
 
@@ -55,16 +65,33 @@ if __name__ == "__main__":
 
         cmd = {'pan_angle': 0, 'tilt_angle': 0}
         pan_tilt_controller.cmd_queue.put_nowait(cmd)
-        time.sleep(30)
+        time.sleep(10)
+
+        start_time = datetime.datetime.now(tz=pytz.timezone("Europe/London"))
+
+        demo_time = start_time # Demo mode only.
+
+        print(start_time)
 
         while True:
 
-            time_data = datetime.datetime.now(tz=pytz.timezone("Europe/London"))
-            sun_data = solar_oven.get_solar_info_by_time(time_data)
-            # print(time_data, sun_data)
-            cmd = {'pan_angle': 270 - sun_data['azimuth_deg'], 'tilt_angle': 180 - sun_data['altitude_deg']}
-            pan_tilt_controller.cmd_queue.put_nowait(cmd)
-            time.sleep(60)
+            if demo_mode:
+                sun_data = solar_oven.get_solar_info_by_time(demo_time)
+                print("Demo Time", demo_time, sun_data)
+                demo_time = demo_time + datetime.timedelta(minutes=10)
+
+                cmd = {'pan_angle': 270 - sun_data['azimuth_deg'], 'tilt_angle': 180 - sun_data['altitude_deg']}
+                pan_tilt_controller.cmd_queue.put_nowait(cmd)
+                time.sleep(0.2)
+
+            else:
+                time_data = datetime.datetime.now(tz=pytz.timezone("Europe/London"))
+                sun_data = solar_oven.get_solar_info_by_time(time_data)
+                # print(time_data, sun_data)
+                cmd = {'pan_angle': 270 - sun_data['azimuth_deg'], 'tilt_angle': 180 - sun_data['altitude_deg']}
+                pan_tilt_controller.cmd_queue.put_nowait(cmd)
+                time.sleep(60)
+
 
     except KeyboardInterrupt:
 
